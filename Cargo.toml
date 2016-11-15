@@ -1,0 +1,7 @@
+[package]
+name = "tt"
+version = "0.1.0"
+authors = ["wKLV <wkaeleuve@gmail.com>"]
+
+[dependencies]
+glium = "*"
