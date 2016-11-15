@@ -34,6 +34,12 @@ fn sprite(e:Entity) -> (f32, f32, f32) {
 const BOARD_SIZE_X:usize = 8;
 const BOARD_SIZE_Y:usize = 8;
 
+const SCREEN_PIXELS_X:usize = 800;
+const SCREEN_PIXELS_Y:usize = 800;
+
+const GRID_SIZE_X:usize = (SCREEN_PIXELS_X / BOARD_SIZE_X);
+const GRID_SIZE_Y:usize = (SCREEN_PIXELS_Y / BOARD_SIZE_Y);
+
 struct Board {
     entities : [[Option<Entity>;BOARD_SIZE_Y];BOARD_SIZE_X], 
 }
@@ -63,7 +69,7 @@ fn main() {
     world_board.entities[1][1] = Some(Monstar);
 
     let display = glium::glutin::WindowBuilder::new()
-        .with_dimensions(800, 800)
+        .with_dimensions(SCREEN_PIXELS_X as u32, SCREEN_PIXELS_Y as u32)
         .with_title(format!("tt"))
         .build_glium()
         .unwrap();
@@ -76,7 +82,8 @@ fn main() {
     let shape = vec![vertex1, vertex2, vertex3, vertex4];
 
     let mut grid = vec![];
-    for i in 0..8i32 {
+    // TODO: BOARD_SIZE_X =/= BOARD_SIZE_Y
+    for i in 0..BOARD_SIZE_X {
         let coord = -1.0 + (i as f32) / (8.0 / 2.0);
         grid.push( Vertex { nones: [coord, -1.0] } );
         grid.push( Vertex { nones: [coord,  1.0] } );
@@ -141,6 +148,18 @@ fn main() {
         }
     };
 
+    let mut mouse_pos: Option<(i32, i32)> = None;
+
+    fn pixels_to_grid(pixels:Option<(i32, i32)>) -> Option<(usize, usize)> {
+        // println!("{:?}", (GRID_SIZE_X, GRID_SIZE_Y));
+        match pixels {
+            None => None,
+            Some((x, y)) => Some(
+                ((x as usize) / GRID_SIZE_X,
+                 (y as usize) / GRID_SIZE_Y))
+        }
+    }
+
     loop {
         let mut target = display.draw();
         target.clear_color(1.0, 1.0, 1.0, 1.0);
@@ -149,8 +168,11 @@ fn main() {
         draw(&world_board, &mut target);
         target.finish().unwrap();
         for ev in display.poll_events() {
+            use glium::glutin::Event::*;
             match ev {
-                glium::glutin::Event::Closed => return,
+                Closed => return,
+                MouseMoved(x, y) => mouse_pos = Some((x,y)),
+                MouseInput(glium::glutin::ElementState::Pressed, glium::glutin::MouseButton::Left) => println!("{:?}", pixels_to_grid(mouse_pos)),
                 _ => ()
             }
         }
