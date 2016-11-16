@@ -84,7 +84,7 @@ fn main() {
     let mut grid = vec![];
     // TODO: BOARD_SIZE_X =/= BOARD_SIZE_Y
     for i in 0..BOARD_SIZE_X {
-        let coord = -1.0 + (i as f32) / (8.0 / 2.0);
+        let coord = -1.0 + (i as f32) / (BOARD_SIZE_X as f32 / 2.0);
         grid.push( Vertex { nones: [coord, -1.0] } );
         grid.push( Vertex { nones: [coord,  1.0] } );
         grid.push( Vertex { nones: [-1.0, coord] } );
@@ -98,14 +98,14 @@ fn main() {
     let grid_vertex_buffer = glium::VertexBuffer::new(&display, &grid).unwrap();
     let grid_indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
 
-    let vertex_shader_src = r#"
+    let vertex_shader_src = format!(r#"
         #version 140
         in vec2 nones;
         uniform vec2 position;
-        void main() {
-            gl_Position = vec4(position + nones*1.0/8.0, 0.0, 1.0);
-        }
-        "#;
+        void main() {{
+            gl_Position = vec4(position + nones / {}, 0.0, 1.0);
+        }}
+        "#, BOARD_SIZE_X);
 
     let fragment_shader_src = r#"
         #version 140
@@ -132,7 +132,7 @@ fn main() {
         }
         "#;
 
-    let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap();
+    let program = glium::Program::from_source(&display, &vertex_shader_src, fragment_shader_src, None).unwrap();
     let grid_program = glium::Program::from_source(&display, grid_vertex_shader_src, grid_fragment_shader_src, None).unwrap();
 
     let draw = |board:&Board, target:&mut glium::Frame| {
@@ -140,7 +140,7 @@ fn main() {
             for (y, e) in es.iter().enumerate() {
                 if let Some(entity) = *e {
                     let color = sprite(entity);
-                    let uniforms = uniform! { color: color, position:((x as f32)*0.25f32 -1.0 +1.0/8.0, -(y as f32)*0.25f32 +1.0 -1.0/8.0) };
+                    let uniforms = uniform! { color: color, position:((x as f32)*(2.0/BOARD_SIZE_X as f32) -1.0 +1.0/BOARD_SIZE_X as f32, -(y as f32)*(2.0/BOARD_SIZE_X as f32) +1.0 -1.0/BOARD_SIZE_Y as f32) };
                     target.draw(&vertex_buffer, &indices, &program, &uniforms, &Default::default()).unwrap();
 
                 }
@@ -151,13 +151,7 @@ fn main() {
     let mut mouse_pos: Option<(i32, i32)> = None;
 
     fn pixels_to_grid(pixels:Option<(i32, i32)>) -> Option<(usize, usize)> {
-        // println!("{:?}", (GRID_SIZE_X, GRID_SIZE_Y));
-        match pixels {
-            None => None,
-            Some((x, y)) => Some(
-                ((x as usize) / GRID_SIZE_X,
-                 (y as usize) / GRID_SIZE_Y))
-        }
+        pixels.map(|(x, y)|((x as usize) / GRID_SIZE_X, (y as usize) / GRID_SIZE_Y)) 
     }
 
     loop {
