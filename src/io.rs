@@ -2,6 +2,17 @@ use glium;
 use game::*;
 
 #[derive(Copy, Clone, Debug)]
+pub enum Input {
+    Quit,
+    TileClick(Position),
+    Action1,
+//    Action2,
+//    ActionAOn(Position),
+//    ActionBOn(Position),
+}
+
+
+#[derive(Copy, Clone, Debug)]
 struct Vertex {
     nones: [f32; 2],
 }
@@ -29,7 +40,7 @@ pub const SCREEN_PIXELS_Y:u32 = 500;
 pub const CELL_SIZE_X:u32 = (SCREEN_PIXELS_X / BOARD_SIZE_X);
 pub const CELL_SIZE_Y:u32 = (SCREEN_PIXELS_Y / BOARD_SIZE_Y);
 
-pub fn init(world_board:&mut Board) -> RenderTarget {
+pub fn init() -> RenderTarget {
     use glium::DisplayBuild;
 
     let display = glium::glutin::WindowBuilder::new()
@@ -129,7 +140,7 @@ pub fn init(world_board:&mut Board) -> RenderTarget {
                     }
 }
 
-pub fn draw_update(world_board:&Board, render_target:&mut RenderTarget) -> bool {
+pub fn draw_update(world_board:&Board, render_target:&mut RenderTarget) -> Option<Input> {
     use glium::Surface;
     let mut frame = render_target.display.draw();
     frame.clear_color(1.0, 1.0, 1.0, 1.0);
@@ -138,18 +149,21 @@ pub fn draw_update(world_board:&Board, render_target:&mut RenderTarget) -> bool 
     draw(&render_target.grid, &glium::uniforms::EmptyUniforms, &mut frame);
     draw_board(&world_board, &render_target, &mut frame);
     frame.finish().unwrap();
-
+    
+    let mut result:Option<Input> = None;
+    use io::Input::*;
+    use glium::glutin::ElementState::Pressed;
     for ev in render_target.display.poll_events() {
         use glium::glutin::Event::*;
         match ev {
-            Closed => return false,
+            Closed => result=Some(Quit),
             MouseMoved(x, y) => render_target.mouse_pos = (x as u32, y as u32),
-            MouseInput(glium::glutin::ElementState::Pressed, glium::glutin::MouseButton::Left) => println!("{:?}", pixels_to_grid(render_target.mouse_pos.0, render_target.mouse_pos.1)),
+            MouseInput(Pressed, glium::glutin::MouseButton::Left) => result = Some(TileClick(pixels_to_grid(render_target.mouse_pos.0, render_target.mouse_pos.1))),
+            KeyboardInput(Pressed, _, Some(glium::glutin::VirtualKeyCode::X)) => result = Some(Action1),
             _ => ()
         }
     }
-
-    return true;
+    return result;
 }
 
 fn draw_board (board:&Board, render_target:&RenderTarget, frame:&mut glium::Frame) {

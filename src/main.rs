@@ -104,13 +104,16 @@ fn main() {
     world_board.try_add_entity(Position::new(1,1), Chara);
     world_board.try_add_entity(Position::new(2,2), Monstar);
 
-    let mut display = io::init(&mut world_board);
+    let mut display = io::init();
 
+    use io::Input::*;
     loop {
-        let result = io::draw_update(&world_board, &mut display);
-        match result {
-            false => return,
-            _ => ()
+        if let Some(result) = io::draw_update(&world_board, &mut display) {
+            match result {
+                Quit => return,
+                TileClick(pos) => println!("{:?}", pos),
+                _ =>  println!("{:?}", result),
+            }
         }
     }
 }
