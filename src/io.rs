@@ -34,17 +34,19 @@ pub struct RenderTarget {
 
 
 
-pub const SCREEN_PIXELS_X:u32 = 800;
-pub const SCREEN_PIXELS_Y:u32 = 500;
+const SCREEN_PIXELS_X:u32 = 800;
+const SCREEN_PIXELS_Y:u32 = 500;
 
-pub const CELL_SIZE_X:u32 = (SCREEN_PIXELS_X / BOARD_SIZE_X);
-pub const CELL_SIZE_Y:u32 = (SCREEN_PIXELS_Y / BOARD_SIZE_Y);
+const CELL_SIZE_X:u32 = (SCREEN_PIXELS_X / BOARD_SIZE_X);
+const CELL_SIZE_Y:u32 = (SCREEN_PIXELS_Y / BOARD_SIZE_Y);
 
 pub fn init() -> RenderTarget {
     use glium::DisplayBuild;
 
     let display = glium::glutin::WindowBuilder::new()
         .with_dimensions(SCREEN_PIXELS_X as u32, SCREEN_PIXELS_Y as u32)
+        .with_min_dimensions(SCREEN_PIXELS_X as u32, SCREEN_PIXELS_Y as u32)
+        .with_max_dimensions(SCREEN_PIXELS_X as u32, SCREEN_PIXELS_Y as u32)
         .with_title(format!("tt"))
         .build_glium()
         .unwrap();
