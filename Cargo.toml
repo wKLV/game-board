@@ -5,3 +5,4 @@ authors = ["wKLV <wkaeleuve@gmail.com>"]
 
 [dependencies]
 glium = "*"
+image = "*"

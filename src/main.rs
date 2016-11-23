@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate glium;
+extern crate image;
 
 mod io;
 
@@ -43,11 +44,11 @@ mod game {
     }
 
     impl Entity {
-        pub fn sprite(&self) -> (f32, f32, f32) {
+        pub fn sprite(&self) -> Sprite {
             use self::EntityType::*;
             match self.entity_type {
-                Chara => (0.5, 0.75, 0.25),
-                Monstar => (0.75, 0.5, 0.25)
+                Chara => Sprite::Chara,
+                Monstar => Sprite::Monstar,
             }
         }
 
@@ -55,6 +56,12 @@ mod game {
             self.position
         }
     }
+
+    pub enum Sprite {
+        Chara,
+        Monstar,
+    }
+
 
     pub const BOARD_SIZE_X:u32 = 8;
     pub const BOARD_SIZE_Y:u32 = 5;
